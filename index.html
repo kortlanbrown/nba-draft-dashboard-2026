@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2026 NBA Draft Predictions</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --text-hint: #94a3b8;
+      --accent: #1d4ed8;
+      --accent-bg: #eff6ff;
+      --accent-text: #1d4ed8;
+      --rookie: #378ADD;
+      --career: #1D9E75;
+      --peak: #BA7517;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    header {
+      background: #0f172a;
+      color: white;
+      padding: 2rem 2rem 1.5rem;
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 14px;
+      color: #94a3b8;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    .disclaimer {
+      background: #1e293b;
+      border-left: 3px solid #378ADD;
+      padding: 10px 16px;
+      margin-top: 16px;
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      font-size: 12px;
+      color: #94a3b8;
+      max-width: 700px;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 3rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    select {
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-color: #93c5fd;
+      font-weight: 500;
+    }
+
+    .divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .player-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .player-card:hover {
+      border-color: #93c5fd;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .player-card.selected {
+      border: 2px solid var(--accent);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .card-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .card-meta {
+      font-size: 11px;
+      color: var(--text-hint);
+      margin-top: 2px;
+    }
+
+    .card-pick {
+      font-size: 11px;
+      color: var(--accent-text);
+      background: var(--accent-bg);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .card-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .cs-item { text-align: center; }
+
+    .cs-val {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .cs-lbl {
+      font-size: 10px;
+      color: var(--text-hint);
+      margin-top: 1px;
+    }
+
+    .bar-bg {
+      height: 3px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--rookie);
+      transition: width 0.4s ease;
+    }
+
+    .chart-section {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chart-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .detail-panel {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: none;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .detail-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .detail-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .uncertainty-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+
+    .unc-low { background: #dcfce7; color: #166534; }
+    .unc-medium { background: #fef9c3; color: #854d0e; }
+    .unc-high { background: #fee2e2; color: #991b1b; }
+
+    .period-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .period-card {
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      border: 0.5px solid var(--border);
+    }
+
+    .period-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .period-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+    }
+
+    .ps-item { text-align: center; }
+
+    .ps-val {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .ps-lbl {
+      font-size: 9px;
+      color: var(--text-hint);
+      margin-top: 1px;
+    }
+
+    .comps-section { margin-top: 12px; }
+
+    .comps-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .comps-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .comp-badge {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: var(--radius-md);
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border: 0.5px solid #93c5fd;
+    }
+
+    .mae-note {
+      font-size: 11px;
+      color: var(--text-hint);
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 12px;
+      color: var(--text-hint);
+      border-top: 0.5px solid var(--border);
+    }
+
+    @media (max-width: 600px) {
+      .period-grid { grid-template-columns: 1fr; }
+      header h1 { font-size: 22px; }
+      .controls { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">Data-Driven Draft Analysis</div>
+    <h1>2026 NBA Draft Predictions</h1>
+    <p>Machine learning model trained on 141 top-14 draft picks (2004–2021). Predicts rookie year, career average, and peak season stats using college advanced metrics.</p>
+    <div class="disclaimer">
+      Model accuracy: PPG ±3.5 pts · APG ±0.9 · RPG ±1.4 · BPG ±0.2 · SPG ±0.3 — predictions are probabilistic, not guarantees. Outliers will occur.
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="controls">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Sort by</span>
+      <select id="sortSel">
+        <option value="pick">Draft pick</option>
+        <option value="rookie_ppg">Rookie PPG</option>
+        <option value="peak_ppg">Peak PPG</option>
+        <option value="career_ppg">Career PPG</option>
+        <option value="rookie_rpg">Rookie RPG</option>
+        <option value="rookie_apg">Rookie APG</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Stat</span>
+      <div class="tabs" id="statTabs">
+        <div class="tab active" data-stat="ppg">PPG</div>
+        <div class="tab" data-stat="rpg">RPG</div>
+        <div class="tab" data-stat="apg">APG</div>
+        <div class="tab" data-stat="bpg">BPG</div>
+        <div class="tab" data-stat="spg">SPG</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Period</span>
+      <div class="tabs" id="periodTabs">
+        <div class="tab active" data-period="rookie">Rookie</div>
+        <div class="tab" data-period="career">Career avg</div>
+        <div class="tab" data-period="peak">Peak</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-title" id="chartTitle">Rookie PPG — all prospects</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#378ADD"></div>Rookie</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Career avg</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div>Peak</div>
+      </div>
+    </div>
+    <div style="position:relative;width:100%;height:340px;">
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <div>
+        <div class="detail-name" id="dName"></div>
+        <div class="detail-meta" id="dMeta"></div>
+      </div>
+      <div id="dUncertainty"></div>
+    </div>
+    <div class="period-grid" id="dPeriods"></div>
+    <div class="comps-section">
+      <div class="comps-label">Historical comps</div>
+      <div class="comps-row" id="dComps"></div>
+    </div>
+    <div class="mae-note" id="dMae"></div>
+  </div>
+</main>
+
+<footer>
+  Built with Python · scikit-learn · Gradient Boosting · Data: Kaggle / Barttorvik · 2026 NBA Draft Predictions
+</footer>
+
+<script>
+const prospects = [
+  { player:'AJ Dybantsa', pick:1, pos:'SF', school:'BYU', conf:'Big 12', uncertainty:'Low',
+    rookie:{ppg:19.3,apg:3.1,rpg:4.9,bpg:0.4,spg:0.9},
+    career:{ppg:24.5,apg:5.8,rpg:4.8,bpg:0.5,spg:0.9},
+    peak:{ppg:28.7,apg:7.0,rpg:5.5,bpg:0.4,spg:1.1},
+    comps:['Anthony Edwards','RJ Barrett','Kemba Walker'] },
+  { player:'Darryn Peterson', pick:2, pos:'SG', school:'Kansas', conf:'Big 12', uncertainty:'Medium',
+    rookie:{ppg:15.2,apg:2.1,rpg:4.3,bpg:0.3,spg:1.0},
+    career:{ppg:23.7,apg:4.6,rpg:5.3,bpg:0.6,spg:1.2},
+    peak:{ppg:30.4,apg:5.4,rpg:6.0,bpg:0.5,spg:1.2},
+    comps:['Anthony Edwards','Donovan Mitchell','Harrison Barnes'] },
+  { player:'Cameron Boozer', pick:3, pos:'PF', school:'Duke', conf:'ACC', uncertainty:'Low',
+    rookie:{ppg:13.3,apg:2.7,rpg:5.3,bpg:0.3,spg:1.0},
+    career:{ppg:20.1,apg:3.2,rpg:6.3,bpg:0.4,spg:1.1},
+    peak:{ppg:25.6,apg:4.4,rpg:7.7,bpg:0.6,spg:1.2},
+    comps:['Kemba Walker','Jarrett Culver','RJ Barrett'] },
+  { player:'Caleb Wilson', pick:4, pos:'PF', school:'North Carolina', conf:'ACC', uncertainty:'Medium',
+    rookie:{ppg:11.3,apg:1.5,rpg:6.1,bpg:0.4,spg:0.9},
+    career:{ppg:18.4,apg:2.8,rpg:7.2,bpg:0.6,spg:1.0},
+    peak:{ppg:23.1,apg:3.5,rpg:8.9,bpg:0.8,spg:1.1},
+    comps:['Anthony Edwards','Donovan Mitchell','Gerald Henderson'] },
+  { player:'Darius Acuff Jr', pick:5, pos:'PG', school:'Arkansas', conf:'SEC', uncertainty:'Low',
+    rookie:{ppg:10.9,apg:4.8,rpg:3.6,bpg:0.3,spg:0.7},
+    career:{ppg:18.2,apg:7.1,rpg:3.9,bpg:0.3,spg:0.9},
+    peak:{ppg:22.4,apg:9.3,rpg:4.2,bpg:0.3,spg:1.1},
+    comps:['Anthony Edwards','Donovan Mitchell','Gerald Henderson'] },
+  { player:'Kingston Flemings', pick:6, pos:'PG', school:'Houston', conf:'Big 12', uncertainty:'Low',
+    rookie:{ppg:11.5,apg:3.5,rpg:4.5,bpg:0.3,spg:1.2},
+    career:{ppg:16.8,apg:5.9,rpg:4.3,bpg:0.3,spg:1.1},
+    peak:{ppg:21.2,apg:7.8,rpg:4.9,bpg:0.4,spg:1.3},
+    comps:['Michael Carter-Williams','Elfrid Payton','Brandon Knight'] },
+  { player:'Keaton Wagler', pick:7, pos:'SG', school:'Illinois', conf:'Big Ten', uncertainty:'Low',
+    rookie:{ppg:11.9,apg:3.2,rpg:4.5,bpg:0.3,spg:0.8},
+    career:{ppg:17.3,apg:4.1,rpg:4.8,bpg:0.3,spg:0.9},
+    peak:{ppg:22.8,apg:5.2,rpg:5.5,bpg:0.4,spg:1.0},
+    comps:['Harrison Barnes','Evan Fournier','Joe Harris'] },
+  { player:'Mikel Brown Jr', pick:8, pos:'PG', school:'Louisville', conf:'ACC', uncertainty:'Medium',
+    rookie:{ppg:13.1,apg:3.7,rpg:3.9,bpg:0.3,spg:0.9},
+    career:{ppg:19.4,apg:5.5,rpg:4.1,bpg:0.3,spg:1.0},
+    peak:{ppg:25.1,apg:7.2,rpg:4.6,bpg:0.4,spg:1.2},
+    comps:['Ziaire Williams','Tyus Jones','Frank Ntilikina'] },
+  { player:'Nate Ament', pick:9, pos:'SF', school:'Tennessee', conf:'SEC', uncertainty:'Low',
+    rookie:{ppg:9.6,apg:1.3,rpg:3.3,bpg:0.2,spg:0.7},
+    career:{ppg:15.1,apg:2.4,rpg:4.8,bpg:0.4,spg:0.9},
+    peak:{ppg:19.8,apg:3.1,rpg:5.9,bpg:0.5,spg:1.0},
+    comps:['Cam Reddish','Josh Jackson','OG Anunoby'] },
+  { player:'Koa Peat', pick:11, pos:'PF', school:'Arizona', conf:'Big 12', uncertainty:'Low',
+    rookie:{ppg:8.2,apg:1.3,rpg:4.2,bpg:0.4,spg:0.5},
+    career:{ppg:13.7,apg:2.1,rpg:6.1,bpg:0.6,spg:0.7},
+    peak:{ppg:18.3,apg:2.8,rpg:7.6,bpg:0.8,spg:0.9},
+    comps:['Cam Reddish','Noah Vonleh','Skal Labissiere'] },
+  { player:'Thomas Haugh', pick:12, pos:'PF', school:'Florida', conf:'SEC', uncertainty:'Low',
+    rookie:{ppg:7.6,apg:1.4,rpg:4.0,bpg:0.4,spg:0.6},
+    career:{ppg:12.9,apg:2.2,rpg:5.5,bpg:0.5,spg:0.8},
+    peak:{ppg:17.4,apg:3.0,rpg:6.8,bpg:0.7,spg:0.9},
+    comps:['Donovan Mitchell','Tobias Harris','Justin Anderson'] },
+  { player:'Yaxel Lendenborg', pick:13, pos:'SF', school:'Michigan', conf:'Big Ten', uncertainty:'Low',
+    rookie:{ppg:11.8,apg:1.8,rpg:4.7,bpg:0.7,spg:1.0},
+    career:{ppg:17.6,apg:3.1,rpg:5.8,bpg:0.8,spg:1.1},
+    peak:{ppg:23.4,apg:4.2,rpg:7.1,bpg:1.0,spg:1.3},
+    comps:['Donovan Mitchell','Darius Garland','Shai Gilgeous-Alexander'] },
+  { player:'Braylon Mullins', pick:14, pos:'SG', school:'UConn', conf:'Big East', uncertainty:'High',
+    rookie:{ppg:7.8,apg:1.3,rpg:3.4,bpg:0.4,spg:0.6},
+    career:{ppg:14.2,apg:2.5,rpg:4.1,bpg:0.4,spg:0.8},
+    peak:{ppg:23.4,apg:3.2,rpg:4.7,bpg:0.6,spg:1.0},
+    comps:['Ziaire Williams','Jordan Nwora','Kelan Martin'] },
+  { player:'Chris Cenac', pick:18, pos:'C', school:'Houston', conf:'Big 12', uncertainty:'High',
+    rookie:{ppg:5.7,apg:0.7,rpg:4.2,bpg:0.4,spg:0.5},
+    career:{ppg:10.4,apg:1.2,rpg:6.8,bpg:0.7,spg:0.6},
+    peak:{ppg:18.7,apg:2.8,rpg:7.8,bpg:0.7,spg:0.8},
+    comps:['Earl Clark','Kevon Looney','Thomas Bryant'] },
+  { player:'Labaron Philon', pick:19, pos:'PG', school:'Alabama', conf:'SEC', uncertainty:'Low',
+    rookie:{ppg:9.1,apg:3.1,rpg:2.7,bpg:0.2,spg:0.5},
+    career:{ppg:16.8,apg:5.4,rpg:3.1,bpg:0.3,spg:0.8},
+    peak:{ppg:16.8,apg:6.1,rpg:3.1,bpg:0.3,spg:0.8},
+    comps:['Donovan Mitchell','Fred VanVleet','Monte Morris'] },
+];
+
+const MAE = { ppg: 3.5, apg: 0.9, rpg: 1.4, bpg: 0.2, spg: 0.3 };
+
+let activeStat = 'ppg';
+let activePeriod = 'rookie';
+let activeSort = 'pick';
+let selectedPlayer = null;
+let chartInst = null;
+
+function getSorted() {
+  return [...prospects].sort((a, b) => {
+    if (activeSort === 'pick') return a.pick - b.pick;
+    const [per, st] = activeSort.split('_');
+    return b[per][st] - a[per][st];
+  });
+}
+
+function maxVal(stat) {
+  return Math.max(...prospects.map(p => Math.max(p.rookie[stat], p.career[stat], p.peak[stat])));
+}
+
+function renderCards() {
+  const sorted = getSorted();
+  const mx = maxVal(activeStat);
+  document.getElementById('cardsGrid').innerHTML = sorted.map(p => {
+    const val = p[activePeriod][activeStat];
+    const pct = Math.round((val / mx) * 100);
+    const isSel = selectedPlayer === p.player;
+    return `<div class="player-card ${isSel ? 'selected' : ''}" onclick="selectPlayer('${p.player.replace(/'/g,"\\'")}')">
+      <div class="card-header">
+        <div>
+          <div class="card-name">${p.player}</div>
+          <div class="card-meta">${p.pos} · ${p.school}</div>
+        </div>
+        <div class="card-pick">#${p.pick}</div>
+      </div>
+      <div class="card-stats">
+        <div class="cs-item"><div class="cs-val">${val.toFixed(1)}</div><div class="cs-lbl">${activeStat.toUpperCase()}</div></div>
+        <div class="cs-item"><div class="cs-val">${p[activePeriod].rpg.toFixed(1)}</div><div class="cs-lbl">RPG</div></div>
+        <div class="cs-item"><div class="cs-val">${p[activePeriod].apg.toFixed(1)}</div><div class="cs-lbl">APG</div></div>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${activePeriod==='rookie'?'#378ADD':activePeriod==='career'?'#1D9E75':'#BA7517'}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderChart() {
+  const sorted = getSorted();
+  const labels = sorted.map(p => {
+    const parts = p.player.replace(/ Jr\.?$/i, '').split(' ');
+    return parts[parts.length - 1];
+  });
+  const rookieD = sorted.map(p => parseFloat(p.rookie[activeStat].toFixed(1)));
+  const careerD = sorted.map(p => parseFloat(p.career[activeStat].toFixed(1)));
+  const peakD   = sorted.map(p => parseFloat(p.peak[activeStat].toFixed(1)));
+
+  document.getElementById('chartTitle').textContent =
+    `${activeStat.toUpperCase()} projections — all prospects`;
+
+  if (chartInst) chartInst.destroy();
+  chartInst = new Chart(document.getElementById('mainChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Rookie',     data: rookieD, backgroundColor: '#378ADD', borderRadius: 3 },
+        { label: 'Career avg', data: careerD, backgroundColor: '#1D9E75', borderRadius: 3 },
+        { label: 'Peak',       data: peakD,   backgroundColor: '#BA7517', borderRadius: 3 },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} ${activeStat.toUpperCase()}`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 11 }, autoSkip: false, maxRotation: 40 }, grid: { display: false } },
+        y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
+      }
+    }
+  });
+}
+
+function renderDetail(p) {
+  const panel = document.getElementById('detailPanel');
+  panel.style.display = 'block';
+  document.getElementById('dName').textContent = p.player;
+  document.getElementById('dMeta').textContent = `Pick #${p.pick} · ${p.pos} · ${p.school} · ${p.conf}`;
+
+  const uncClass = p.uncertainty === 'Low' ? 'unc-low' : p.uncertainty === 'Medium' ? 'unc-medium' : 'unc-high';
+  document.getElementById('dUncertainty').innerHTML =
+    `<span class="uncertainty-badge ${uncClass}">${p.uncertainty} uncertainty</span>`;
+
+  const periods = [
+    { label: 'Rookie year',  key: 'rookie', color: '#378ADD' },
+    { label: 'Career avg',   key: 'career', color: '#1D9E75' },
+    { label: 'Peak season',  key: 'peak',   color: '#BA7517' },
+  ];
+
+  document.getElementById('dPeriods').innerHTML = periods.map(per => `
+    <div class="period-card">
+      <div class="period-label" style="color:${per.color}">${per.label}</div>
+      <div class="period-stats">
+        ${['ppg','rpg','apg','bpg','spg'].map(s => `
+          <div class="ps-item">
+            <div class="ps-val">${p[per.key][s].toFixed(1)}</div>
+            <div class="ps-lbl">${s.toUpperCase()}</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('dComps').innerHTML = p.comps.map(c =>
+    `<div class="comp-badge">${c}</div>`).join('');
+
+  document.getElementById('dMae').innerHTML =
+    `Model accuracy for this stat: PPG ±${MAE.ppg} · APG ±${MAE.apg} · RPG ±${MAE.rpg} · BPG ±${MAE.bpg} · SPG ±${MAE.spg}. Predictions reflect historical patterns — outliers always occur.`;
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function selectPlayer(name) {
+  const p = prospects.find(x => x.player === name);
+  if (!p) return;
+  if (selectedPlayer === name) {
+    selectedPlayer = null;
+    document.getElementById('detailPanel').style.display = 'none';
+  } else {
+    selectedPlayer = name;
+    renderDetail(p);
+  }
+  renderCards();
+}
+
+document.getElementById('statTabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab');
+  if (!t) return;
+  document.querySelectorAll('#statTabs .tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  activeStat = t.dataset.stat;
+  renderCards(); renderChart();
+});
+
+document.getElementById('periodTabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab');
+  if (!t) return;
+  document.querySelectorAll('#periodTabs .tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  activePeriod = t.dataset.period;
+  renderCards(); renderChart();
+});
+
+document.getElementById('sortSel').addEventListener('change', e => {
+  activeSort = e.target.value;
+  renderCards(); renderChart();
+});
+
+renderCards();
+renderChart();
+</script>
+</body>
+</html>
