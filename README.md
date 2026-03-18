@@ -8,7 +8,7 @@ Built using a machine learning model trained on 141 top-14 draft picks from 2004
 
 ## Live Dashboard
 
-**[View the dashboard →](https://YOUR-USERNAME.github.io/nbc-draft-dashboard-2026)**
+**[View the dashboard →](https://kortlan.brown.github.io/nba-draft-dashboard-2026)**
 
 ---
 
